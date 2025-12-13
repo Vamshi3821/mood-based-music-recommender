@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mood Based Music Recommender</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <!-- Bootstrap 5 -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Google Font -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            min-height: 100vh;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+
+        video {
+            border-radius: 15px;
+            border: 3px solid rgba(255,255,255,0.4);
+        }
+
+        .detect-btn {
+            background: linear-gradient(90deg, #ff758c, #ff7eb3);
+            border: none;
+            color: white;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+
+        .detect-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .song-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.15);
+        }
+
+        .music-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 16px;
+            border-radius: 999px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .spotify-btn {
+            background: linear-gradient(90deg, #1DB954, #1ed760);
+            color: white;
+            border: none;
+        }
+
+        .youtube-btn {
+            background: linear-gradient(90deg, #ff0000, #ff4d4d);
+            color: white;
+            border: none;
+        }
+
+        .music-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+
+<body class="flex items-center justify-center px-3">
+
+<div class="container max-w-4xl">
+    <div class="glass p-4 p-md-5 text-center text-white">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4">🎵 Mood Based Music Recommender</h1>
+        <p class="mb-4 opacity-90">Detect your emotion and get music that matches your mood</p>
+
+        <!-- Camera Section -->
+        <div class="flex justify-center mb-4">
+            <video id="video" width="420" height="320" autoplay></video>
+        </div>
+
+        <button onclick="captureAndDetect()" class="detect-btn btn btn-lg px-5 py-2 rounded-pill shadow mb-3">
+            Detect Mood
+        </button>
+
+        <h2 id="mood" class="text-xl font-semibold mt-3"></h2>
+
+        <!-- Songs Section -->
+        <div id="songs" class="mt-4 text-dark"></div>
+    </div>
+</div>
+
+<script>
+    // Access webcam
+    const video = document.getElementById('video');
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => video.srcObject = stream)
+        .catch(err => console.error("Error accessing webcam: ", err));
+
+    // Capture image and send to backend
+    function captureAndDetect() {
+        const canvas = document.createElement('canvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const image = canvas.toDataURL('image/jpeg');
+
+        fetch('/detect_emotion', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ image: image })
+        })
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('mood').innerText = "Detected Mood: " + data.mood;
+
+            const songsDiv = document.getElementById('songs');
+            songsDiv.innerHTML = "";
+
+            data.songs.forEach(song => {
+                const songDiv = document.createElement('div');
+                songDiv.className = "song-card";
+                songDiv.innerHTML = `
+                    <div class="d-flex justify-content-between align-items-center flex-wrap">
+                        <strong class="mb-2">${song.title}</strong>
+                        <div>
+                            <button class="music-btn spotify-btn me-2"
+                                    onclick="window.open('${song.spotify_link}', '_blank')">
+                                <i class="bi bi-spotify"></i> Spotify
+                            </button>
+
+                            <button class="music-btn youtube-btn"
+                                    onclick="window.open('${song.youtube_link}', '_blank')">
+                                <i class="bi bi-youtube"></i> YouTube
+                            </button>
+                        </div>
+                    </div>
+                `;
+                songsDiv.appendChild(songDiv);
+            });
+        })
+        .catch(err => console.error("Error detecting mood: ", err));
+    }
+</script>
+
+</body>
+</html>
