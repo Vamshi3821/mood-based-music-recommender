@@ -8,13 +8,11 @@ import random
 
 app = Flask(__name__)
 
-# -------------------------
-# MySQL connection setup
-# -------------------------
+
 conn = mysql.connector.connect(
     host="localhost",
     user="root",
-    password="Vamshi@123",  # Replace with your MySQL password
+    password="Vamshi@123",  
     database="songs",
 )
 cursor = conn.cursor()
@@ -26,9 +24,9 @@ cursor = conn.cursor()
 def index():
     return render_template('index.html')
 
-# -------------------------
-# API: Detect emotion and get songs
-# -------------------------
+
+# Detect emotion 
+
 @app.route('/detect_emotion', methods=['POST'])
 def detect_emotion():
     try:
