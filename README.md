@@ -5,13 +5,6 @@
 - Integration with Spotify and YouTube links
 - User-friendly interface
 
-## Features
-- Real-time face emotion detection using webcam
-- Detects emotions like Happy, Sad, Angry, Neutral
-- Recommends songs based on detected emotion
-- Integration with Spotify and YouTube links
-- User-friendly interface
-
 ## Technologies Used
 - Python
 - OpenCV
